@@ -1,5 +1,7 @@
 package com.servlets;
 
+import com.google.gson.Gson;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -7,53 +9,53 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 public class Servlet extends HttpServlet {
+    private String token = "ASDYQW127BFYWEBCAQWUQWNCE38ASDNCNUEO12";
+
+    //    @Override
+//    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        resp.getWriter().append("Welcome to my app");
+//        EmailSender.testSendEmail();
+//    }
+
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().append("Welcome to my app");
-        sendEmail();
-    }
-
-
-    private void sendEmail(){
-        final String username = "techmagic.tennis@gmail.com";
-        final String password = "hjcnbrgo9";
-
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-        props.put("mail.debug", "true");
-        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
-        props.put("mail.transport.protocol", "smtp");
-
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-
-        try {
-
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(username));
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse("rgaidukevich9@gmail.com"));
-            message.setSubject("Testing Subject");
-            message.setText("Dear Mail Crawler,"
-                    + "\n\n No spam to my email, please!");
-
-            Transport.send(message);
-
-            System.out.println("Done");
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        BufferedReader body = req.getReader();
+        String bodyLines = "";
+        String bodyStr = "";
+        while ((bodyLines = body.readLine())!=null) {
+            bodyStr+=bodyLines;
         }
+        System.out.println(bodyStr);
+
+
+        resp.getWriter().append("Response : "+bodyStr);
+        Emails emailsData = new Gson().fromJson(bodyStr, Emails.class);
+
+        if (emailsData.token.equals(token)) {
+            EmailSender.sendEmail(emailsData.emails);
+        } else {
+            resp.getWriter().append("{'message' : 'bad request', 'reason' : 'invalid_token'}");
+            resp.setStatus(403);
+        }
+
     }
+
+    class Emails {
+        List<EmailJSON> emails;
+        String token;
+    }
+
+    class EmailJSON {
+        public String to;
+        public String subject;
+        public String html;
+    }
+
 }
