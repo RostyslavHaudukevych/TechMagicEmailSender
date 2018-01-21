@@ -13,7 +13,7 @@
 
   <servlet-mapping>
     <servlet-name>myservlet</servlet-name>
-    <url-pattern>/myservlet</url-pattern>
+    <url-pattern>/tournament/started</url-pattern>
   </servlet-mapping>
 
 </web-app>
